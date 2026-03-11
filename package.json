@@ -1,0 +1,50 @@
+{
+  "name": "@sfpy/raast-sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for Safepay's Raast Wire API",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "generate": "openapi-ts -i https://raw.githubusercontent.com/getsafepay/raast-docs/main/api-reference/openapi.yaml -o src/generated --client legacy/axios",
+    "generate:local": "openapi-ts -i openapi.yaml -o src/generated --client legacy/axios",
+    "build": "pnpm run build:cjs && pnpm run build:esm && pnpm run build:types",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:types": "tsc -p tsconfig.types.json",
+    "prebuild": "pnpm run generate",
+    "clean": "rm -rf dist src/generated",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "safepay",
+    "raast",
+    "sdk",
+    "typescript",
+    "api"
+  ],
+  "author": "Safepay",
+  "license": "MIT",
+  "devDependencies": {
+    "@hey-api/openapi-ts": "^0.54.0",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.5"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc"
+}
