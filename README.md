@@ -55,7 +55,7 @@ pnpm run build:cjs && pnpm run build:esm && pnpm run build:types
 ```
 pnpm run build
 │
-├── 1. prebuild (automatic npm lifecycle hook)
+├── 1. prebuild (automatic npm lifecycle hook) - runs because of "pre" prefix for the build command.
 │   └── pnpm run generate
 │       └── openapi-ts -i <remote-url> -o src/generated --client legacy/axios
 │           - Fetches openapi.yaml from GitHub
@@ -83,7 +83,7 @@ build = compile that TypeScript into JavaScript that other projects can consume
 
 ### Safe to regenerate
 
-- `src/generated/` is completely overwritten each time (this is expected)
+- `src/generated/` is completely overwritten each time
 - `src/client.ts` and `src/index.ts` are never touched
 - `dist/` is rebuilt from scratch
 
@@ -121,10 +121,16 @@ import {
   getV1AggregatorsByRaastAggregatorIdKeys,
 } from "@sfpy/raast-sdk";
 
-// Initialize once — configures base URL and auth header
+// Step 1: Initialize once (constructor runs, configures OpenAPI globals)
 new RaastClient({
-  apiKey: "your-api-key",
+  apiKey: "sk_live_abc123",
 });
+
+// Step 2: Now all generated functions automatically use those credentials
+const result = await getV1AggregatorsByRaastAggregatorId({
+  raastAggregatorId: "agg_...",
+});
+// ^ This sends a request with header "x-sfpy-raast-key: sk_live_abc123"
 
 // Get aggregator
 const aggregator = await getV1AggregatorsByRaastAggregatorId({
