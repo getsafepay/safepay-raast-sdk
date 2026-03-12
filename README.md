@@ -76,6 +76,9 @@ pnpm run build
 └── 4. build:types
     └── tsc -p tsconfig.types.json
         - Emits dist/types/*.d.ts declaration files only
+
+generate = write the TypeScript source code from the OpenAPI spec
+build = compile that TypeScript into JavaScript that other projects can consume
 ```
 
 ### Safe to regenerate
