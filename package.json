@@ -16,8 +16,8 @@
     "dist"
   ],
   "scripts": {
-    "generate": "openapi-ts -i https://raw.githubusercontent.com/getsafepay/raast-docs/main/api-reference/openapi.yaml -o src/generated --client legacy/axios",
-    "generate:local": "openapi-ts -i openapi.yaml -o src/generated --client legacy/axios",
+    "generate": "openapi-ts",
+    "generate:local": "openapi-ts -i openapi.yaml -o src/generated -c @hey-api/client-axios",
     "build": "pnpm run build:cjs && pnpm run build:esm && pnpm run build:types",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
@@ -33,10 +33,10 @@
     "typescript",
     "api"
   ],
-  "author": "Safepay",
+  "author": "Hama Rivi",
   "license": "MIT",
   "devDependencies": {
-    "@hey-api/openapi-ts": "^0.54.0",
+    "@hey-api/openapi-ts": "^0.94.0",
     "@types/node": "^20.11.0",
     "typescript": "^5.3.3"
   },
