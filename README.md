@@ -6,12 +6,15 @@ Uses `@hey-api/openapi-ts` to generate fully-typed API methods, request/response
 
 ## What's Generated
 
-| File                            | Contents                                                                   |
-| ------------------------------- | -------------------------------------------------------------------------- |
-| `src/generated/services.gen.ts` | One function per API endpoint (39 total) with JSDoc comments               |
-| `src/generated/types.gen.ts`    | TypeScript interfaces for all request params, response bodies, and schemas |
-| `src/generated/schemas.gen.ts`  | Runtime schema definitions                                                 |
-| `src/generated/core/`           | Axios HTTP client, error classes, cancellation support                     |
+
+| File                          | Contents                                                                   |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `src/generated/sdk.gen.ts`    | One function per API endpoint (39 total) with JSDoc comments               |
+| `src/generated/types.gen.ts`  | TypeScript interfaces for all request params, response bodies, and schemas |
+| `src/generated/client.gen.ts` | Configured Axios client instance with `setConfig()` support                |
+| `src/generated/client/`       | Axios client internals, type definitions, utilities                        |
+| `src/generated/core/`         | Auth, serializers, SSE support                                             |
+
 
 The build outputs three formats:
 
@@ -41,7 +44,7 @@ pnpm run clean
 pnpm run build
 ```
 
-That's it. `pnpm run build` automatically fetches the latest `openapi.yaml` from GitHub, regenerates `src/generated/`, and compiles everything.
+`pnpm run build` automatically fetches the latest `openapi.yaml` from GitHub, regenerates `src/generated/`, and compiles everything.
 
 If you have a local copy of `openapi.yaml` instead:
 
@@ -57,13 +60,14 @@ pnpm run build
 │
 ├── 1. prebuild (automatic npm lifecycle hook) - runs because of "pre" prefix for the build command.
 │   └── pnpm run generate
-│       └── openapi-ts -i <remote-url> -o src/generated --client legacy/axios
+│       └── openapi-ts (reads openapi-ts.config.ts)
 │           - Fetches openapi.yaml from GitHub
 │           - Parses all paths, schemas, parameters, request bodies, responses
-│           - Writes src/generated/services.gen.ts  (API functions)
+│           - Writes src/generated/sdk.gen.ts       (API functions)
 │           - Writes src/generated/types.gen.ts     (TypeScript types)
-│           - Writes src/generated/schemas.gen.ts   (schema objects)
-│           - Writes src/generated/core/*           (Axios client internals)
+│           - Writes src/generated/client.gen.ts    (Axios client instance)
+│           - Writes src/generated/client/*         (Axios client internals)
+│           - Writes src/generated/core/*           (auth, serializers)
 │
 ├── 2. build:cjs
 │   └── tsc -p tsconfig.cjs.json
@@ -86,6 +90,43 @@ build = compile that TypeScript into JavaScript that other projects can consume
 - `src/generated/` is completely overwritten each time
 - `src/client.ts` and `src/index.ts` are never touched
 - `dist/` is rebuilt from scratch
+
+## initClient Configuration
+
+`initClient()` takes a `RaastSDKConfig` object with two fields:
+
+
+| Field     | Required | What it controls                                                               | Why you need it                                                                                                          |
+| --------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `apiKey`  | Yes      | Authentication header (`X-SFPY-AGGREGATOR-SECRET-KEY`) sent with every request | Identifies and authorizes your app against Raast APIs. Without it, secured endpoints will fail with unauthorized errors. |
+| `baseURL` | No       | The API host/root URL requests are sent to                                     | Lets you switch environments (for example, production vs staging/sandbox/dev) without changing endpoint code.            |
+
+
+Think of it as:
+
+- `apiKey` = **who you are**
+- `baseURL` = **where requests should go**
+
+If `baseURL` is not provided, the SDK defaults to:
+
+```text
+https://api.getsafepay.com/raastwire
+```
+
+Examples:
+
+```ts
+// Most common: production default base URL
+initClient({
+  apiKey: process.env.RAAST_API_KEY!,
+});
+
+// Custom environment (staging/sandbox/dev)
+initClient({
+  apiKey: process.env.RAAST_API_KEY!,
+  baseURL: "https://staging-api.getsafepay.com/raastwire",
+});
+```
 
 ## Using as a Package in Another Repo
 
@@ -114,33 +155,33 @@ pnpm add github:getsafepay/safepay-raast-sdk
 ### Usage
 
 ```typescript
-import { RaastClient } from "@sfpy/raast-sdk";
 import {
+  initClient,
   getV1AggregatorsByRaastAggregatorId,
   postV1AggregatorsByRaastAggregatorIdPayments,
   getV1AggregatorsByRaastAggregatorIdKeys,
 } from "@sfpy/raast-sdk";
 
-// Step 1: Initialize once (constructor runs, configures OpenAPI globals)
-new RaastClient({
+// Step 1: Initialize once — configures base URL and auth header
+initClient({
   apiKey: "sk_live_abc123",
 });
 
 // Step 2: Now all generated functions automatically use those credentials
 const result = await getV1AggregatorsByRaastAggregatorId({
-  raastAggregatorId: "agg_...",
+  path: { "raast-aggregator-id": "agg_2288490a-..." },
 });
-// ^ This sends a request with header "x-sfpy-raast-key: sk_live_abc123"
+// ^ This sends a request with header "X-SFPY-AGGREGATOR-SECRET-KEY: sk_live_abc123"
 
 // Get aggregator
 const aggregator = await getV1AggregatorsByRaastAggregatorId({
-  raastAggregatorId: "agg_2288490a-...",
+  path: { "raast-aggregator-id": "agg_2288490a-..." },
 });
 
 // Create payment
 const payment = await postV1AggregatorsByRaastAggregatorIdPayments({
-  raastAggregatorId: "agg_2288490a-...",
-  requestBody: {
+  path: { "raast-aggregator-id": "agg_2288490a-..." },
+  body: {
     request_id: "unique-id",
     amount: 5000,
     aggregator_merchant_identifier: "am_...",
@@ -153,20 +194,18 @@ const payment = await postV1AggregatorsByRaastAggregatorIdPayments({
 
 // List access keys with filters
 const keys = await getV1AggregatorsByRaastAggregatorIdKeys({
-  raastAggregatorId: "agg_2288490a-...",
-  limit: 10,
-  offset: 0,
-  isActive: "true",
+  path: { "raast-aggregator-id": "agg_2288490a-..." },
+  query: { limit: 10, offset: 0, is_active: "true" },
 });
 ```
 
 ## Viewing the API Docs Visually
 
-The generated TypeScript files are the SDK, not a visual API reference. To browse the API visually (like Swagger UI), use any of these:
+The generated TypeScript files are the SDK, not a visual API reference. To browse the API visually:
 
 ### Swagger Editor (quickest)
 
-Open https://editor.swagger.io and paste the contents of `openapi.yaml`, or import from URL:
+Open [https://editor.swagger.io](https://editor.swagger.io) and import from URL:
 
 ```
 https://raw.githubusercontent.com/getsafepay/raast-docs/main/api-reference/openapi.yaml
@@ -180,7 +219,7 @@ docker run -p 8080:8080 \
   swaggerapi/swagger-ui
 ```
 
-Then open http://localhost:8080.
+Then open [http://localhost:8080](http://localhost:8080).
 
 ### Redocly (cleaner docs)
 
@@ -188,9 +227,10 @@ Then open http://localhost:8080.
 npx @redocly/cli preview-docs openapi.yaml
 ```
 
-Opens a polished, searchable API reference at http://localhost:8080.
+Opens a polished, searchable API reference at [http://localhost:8080](http://localhost:8080).
 
 ## Available Scripts
+
 
 | Script                    | Description                                                   |
 | ------------------------- | ------------------------------------------------------------- |
@@ -198,6 +238,7 @@ Opens a polished, searchable API reference at http://localhost:8080.
 | `pnpm run generate:local` | Regenerate from local `openapi.yaml`                          |
 | `pnpm run build`          | Generate + compile CJS, ESM, and type declarations            |
 | `pnpm run clean`          | Delete `dist/` and `src/generated/`                           |
+
 
 ## API Coverage
 
@@ -215,3 +256,4 @@ All 39 endpoints across 11 resource groups:
 - **Aliases** — List, find, title fetch
 - **Ledgers** — Aggregator and merchant ledger accounts
 - **Webhooks** — CRUD + rotate + deliveries
+
