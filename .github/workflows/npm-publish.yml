@@ -1,5 +1,8 @@
 # This workflow publishes to npm when a new release is created.
 #
+# Stable release:     create a GitHub Release (not prerelease) with tag matching package.json version, e.g. v0.0.1
+# Sandbox prerelease: create a GitHub prerelease with tag containing "sandbox", e.g. v0.0.2-sandbox.0
+# Dev prerelease:     create a GitHub prerelease with tag containing "dev", e.g. v0.0.2-dev.0
 
 name: NPM Publish
 
@@ -23,9 +26,6 @@ jobs:
             exit 1
           fi
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10.11.1
-          run_install: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -34,7 +34,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      - run: pnpm publish --no-git-checks
+      - run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -49,9 +49,6 @@ jobs:
           export VERSION="${TAG#v}"
           node -e "const fs = require('fs'); const pkg = require('./package.json'); pkg.version = process.env.VERSION; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\\n');"
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10.11.1
-          run_install: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -60,7 +57,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      - run: pnpm publish --tag sandbox --no-git-checks
+      - run: pnpm publish --access public --tag sandbox --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -75,9 +72,6 @@ jobs:
           export VERSION="${TAG#v}"
           node -e "const fs = require('fs'); const pkg = require('./package.json'); pkg.version = process.env.VERSION; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\\n');"
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10.11.1
-          run_install: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -86,6 +80,6 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
-      - run: pnpm publish --tag dev --no-git-checks
+      - run: pnpm publish --access public --tag dev --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
