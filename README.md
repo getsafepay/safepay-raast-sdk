@@ -6,7 +6,6 @@ Uses `@hey-api/openapi-ts` to generate fully-typed API methods, request/response
 
 ## What's Generated
 
-
 | File                          | Contents                                                                   |
 | ----------------------------- | -------------------------------------------------------------------------- |
 | `src/generated/sdk.gen.ts`    | One function per API endpoint (39 total) with JSDoc comments               |
@@ -14,7 +13,6 @@ Uses `@hey-api/openapi-ts` to generate fully-typed API methods, request/response
 | `src/generated/client.gen.ts` | Configured Axios client instance with `setConfig()` support                |
 | `src/generated/client/`       | Axios client internals, type definitions, utilities                        |
 | `src/generated/core/`         | Auth, serializers, SSE support                                             |
-
 
 The build outputs three formats:
 
@@ -95,36 +93,30 @@ build = compile that TypeScript into JavaScript that other projects can consume
 
 `initClient()` takes a `RaastSDKConfig` object with two fields:
 
-
-| Field     | Required | What it controls                                                               | Why you need it                                                                                                          |
-| --------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `apiKey`  | Yes      | Authentication header (`X-SFPY-AGGREGATOR-SECRET-KEY`) sent with every request | Identifies and authorizes your app against Raast APIs. Without it, secured endpoints will fail with unauthorized errors. |
-| `baseURL` | No       | The API host/root URL requests are sent to                                     | Lets you switch environments (for example, production vs staging/sandbox/dev) without changing endpoint code.            |
-
+| Field         | Required | What it controls                                                               | Why you need it                                                                                                                       |
+| ------------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `apiKey`      | Yes      | Authentication header (`X-SFPY-AGGREGATOR-SECRET-KEY`) sent with every request | Identifies and authorizes your app against Raast APIs. Without it, secured endpoints will fail with unauthorized errors.              |
+| `environment` | No       | Selects the repo-managed base URL for the target runtime environment           | Right now the SDK only defines production. Empty, falsey, or invalid values default to production.                                    |
 
 Think of it as:
 
 - `apiKey` = **who you are**
-- `baseURL` = **where requests should go**
-
-If `baseURL` is not provided, the SDK defaults to:
-
-```text
-https://api.getsafepay.com/raastwire
-```
+- `environment` = **which repo-defined base URL should be used**
 
 Examples:
 
 ```ts
-// Most common: production default base URL
+import { Environment, initClient } from "@sfpy/raast-sdk";
+
+// Most common: defaults to production when environment is omitted
 initClient({
   apiKey: process.env.RAAST_API_KEY!,
 });
 
-// Custom environment (staging/sandbox/dev)
+// Explicitly target production
 initClient({
   apiKey: process.env.RAAST_API_KEY!,
-  baseURL: "https://staging-api.getsafepay.com/raastwire",
+  environment: Environment.Production,
 });
 ```
 
@@ -162,7 +154,7 @@ import {
   getV1AggregatorsByRaastAggregatorIdKeys,
 } from "@sfpy/raast-sdk";
 
-// Step 1: Initialize once — configures base URL and auth header
+// Step 1: Initialize once — configures the environment-derived base URL and auth header
 initClient({
   apiKey: "sk_live_abc123",
 });
@@ -231,14 +223,12 @@ Opens a polished, searchable API reference at [http://localhost:8080](http://loc
 
 ## Available Scripts
 
-
 | Script                    | Description                                                   |
 | ------------------------- | ------------------------------------------------------------- |
 | `pnpm run generate`       | Fetch latest spec from GitHub and regenerate `src/generated/` |
 | `pnpm run generate:local` | Regenerate from local `openapi.yaml`                          |
 | `pnpm run build`          | Generate + compile CJS, ESM, and type declarations            |
 | `pnpm run clean`          | Delete `dist/` and `src/generated/`                           |
-
 
 ## API Coverage
 
@@ -256,4 +246,3 @@ All 39 endpoints across 11 resource groups:
 - **Aliases** — List, find, title fetch
 - **Ledgers** — Aggregator and merchant ledger accounts
 - **Webhooks** — CRUD + rotate + deliveries
-
