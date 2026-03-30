@@ -2,7 +2,9 @@
 
 Auto-generated TypeScript SDK for Safepay's Raast Wire API, built from the [OpenAPI 3.1.0 specification](https://github.com/getsafepay/raast-docs/blob/main/api-reference/openapi.yaml).
 
-Uses `@hey-api/openapi-ts` to generate fully-typed API methods, request/response types, and schemas from the spec. The HTTP client is Axios.
+Uses `@hey-api/openapi-ts` to generate fully-typed API methods, request/response types, and schemas from the spec.
+
+The HTTP client is Axios.
 
 ## What's Generated
 
@@ -93,10 +95,10 @@ build = compile that TypeScript into JavaScript that other projects can consume
 
 `initClient()` takes a `RaastSDKConfig` object with two fields:
 
-| Field         | Required | What it controls                                                               | Why you need it                                                                                                                       |
-| ------------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `apiKey`      | Yes      | Authentication header (`X-SFPY-AGGREGATOR-SECRET-KEY`) sent with every request | Identifies and authorizes your app against Raast APIs. Without it, secured endpoints will fail with unauthorized errors.              |
-| `environment` | No       | Selects the repo-managed base URL for the target runtime environment           | Right now the SDK only defines production. Empty, falsey, or invalid values default to production.                                    |
+| Field         | Required | What it controls                                                               | Why you need it                                                                                                          |
+| ------------- | -------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `apiKey`      | Yes      | Authentication header (`X-SFPY-AGGREGATOR-SECRET-KEY`) sent with every request | Identifies and authorizes your app against Raast APIs. Without it, secured endpoints will fail with unauthorized errors. |
+| `environment` | No       | Selects the repo-managed base URL for the target runtime environment           | Right now the SDK only defines production. Empty, falsey, or invalid values default to production.                       |
 
 Think of it as:
 
@@ -122,26 +124,16 @@ initClient({
 
 ## Using as a Package in Another Repo
 
-### Option 1: Install from npm (after publishing)
+### Install from npm
 
 ```bash
 pnpm add @sfpy/raast-sdk
 ```
 
-### Option 2: Link locally for development
+OR
 
 ```bash
-# In this SDK repo
-pnpm link --global
-
-# In your consuming project
-pnpm link --global @sfpy/raast-sdk
-```
-
-### Option 3: Install directly from GitHub
-
-```bash
-pnpm add github:getsafepay/safepay-raast-sdk
+npm i @sfpy/raast-sdk
 ```
 
 ### Usage
@@ -190,36 +182,6 @@ const keys = await getV1AggregatorsByRaastAggregatorIdKeys({
   query: { limit: 10, offset: 0, is_active: "true" },
 });
 ```
-
-## Viewing the API Docs Visually
-
-The generated TypeScript files are the SDK, not a visual API reference. To browse the API visually:
-
-### Swagger Editor (quickest)
-
-Open [https://editor.swagger.io](https://editor.swagger.io) and import from URL:
-
-```
-https://raw.githubusercontent.com/getsafepay/raast-docs/main/api-reference/openapi.yaml
-```
-
-### Swagger UI locally
-
-```bash
-docker run -p 8080:8080 \
-  -e SWAGGER_JSON_URL=https://raw.githubusercontent.com/getsafepay/raast-docs/main/api-reference/openapi.yaml \
-  swaggerapi/swagger-ui
-```
-
-Then open [http://localhost:8080](http://localhost:8080).
-
-### Redocly (cleaner docs)
-
-```bash
-npx @redocly/cli preview-docs openapi.yaml
-```
-
-Opens a polished, searchable API reference at [http://localhost:8080](http://localhost:8080).
 
 ## Available Scripts
 
