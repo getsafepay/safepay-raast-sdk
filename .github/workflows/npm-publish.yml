@@ -26,6 +26,13 @@ jobs:
             exit 1
           fi
       - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Prepare pnpm store # actions/setup-node was trying to cache the pnpm store, but on a fresh runner that path did not exist yet, so we need to create it manually
+        shell: bash
+        run: |
+          pnpm config set store-dir "$HOME/.pnpm-store"
+          mkdir -p "$(pnpm store path --silent)"
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -49,6 +56,13 @@ jobs:
           export VERSION="${TAG#v}"
           node -e "const fs = require('fs'); const pkg = require('./package.json'); pkg.version = process.env.VERSION; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\\n');"
       - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Prepare pnpm store
+        shell: bash
+        run: |
+          pnpm config set store-dir "$HOME/.pnpm-store"
+          mkdir -p "$(pnpm store path --silent)"
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -72,6 +86,13 @@ jobs:
           export VERSION="${TAG#v}"
           node -e "const fs = require('fs'); const pkg = require('./package.json'); pkg.version = process.env.VERSION; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 4) + '\\n');"
       - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - name: Prepare pnpm store
+        shell: bash
+        run: |
+          pnpm config set store-dir "$HOME/.pnpm-store"
+          mkdir -p "$(pnpm store path --silent)"
       - uses: actions/setup-node@v4
         with:
           node-version: 20
