@@ -2,8 +2,14 @@ export { initClient } from "./client"; // Default use: initClient once at backen
 export type { RaastSDKConfig } from "./client";
 export { Environment } from "./types/environment";
 export type { EnvironmentInput } from "./types/environment";
-export { BASE_URLS_BY_ENVIRONMENT, getBaseUrl, getEnvironment } from "./utils/url";
+export {
+  BASE_URLS_BY_ENVIRONMENT,
+  getBaseUrl,
+  getEnvironment,
+} from "./utils/url";
 
 export { client } from "./generated/client.gen"; // exporting for advanced control (custom interceptors, custom axios instance, dynamic per-request config, etc.).
+export { apiCalls } from "./generated/api-calls.gen"; // list of all API calls (method, name, summary, url)
+export type { RaastApiCall } from "./generated/api-calls.gen";
 export * from "./generated/sdk.gen";
 export * from "./generated/types.gen";

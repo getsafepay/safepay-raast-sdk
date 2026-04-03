@@ -16,8 +16,9 @@
     "dist"
   ],
   "scripts": {
-    "generate": "openapi-ts",
-    "generate:local": "openapi-ts -i openapi.yaml -o src/generated -c @hey-api/client-axios",
+    "generate": "openapi-ts && pnpm run generate:list-api-calls",
+    "generate:local": "openapi-ts -i openapi.yaml -o src/generated -c @hey-api/client-axios && pnpm run generate:list-api-calls",
+    "generate:list-api-calls": "node scripts/generate-api-calls.mjs",
     "build": "pnpm run build:cjs && pnpm run build:esm && pnpm run build:types",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",

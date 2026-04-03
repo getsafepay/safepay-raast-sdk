@@ -208,3 +208,35 @@ All 39 endpoints across 11 resource groups:
 - **Aliases** — List, find, title fetch
 - **Ledgers** — Aggregator and merchant ledger accounts
 - **Webhooks** — CRUD + rotate + deliveries
+
+## Viewing API Calls in a Consuming Repo
+
+You can inspect the full SDK surface from a consuming app by importing `apiCalls`:
+
+```ts
+import { apiCalls } from "@sfpy/raast-sdk";
+
+console.table(apiCalls);
+```
+
+Each entry in the array has this shape:
+
+```ts
+{
+  method: "GET" | "POST" | "PUT" | "DELETE";
+  url: string;
+  name: string;
+  summary: string;
+}
+```
+
+Example entry:
+
+```ts
+{
+  method: "POST",
+  url: "/v1/aggregators/{raast-aggregator-id}/payments",
+  name: "postV1AggregatorsByRaastAggregatorIdPayments",
+  summary: "Create RTP",
+}
+```
